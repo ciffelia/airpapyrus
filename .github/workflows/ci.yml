@@ -1,0 +1,96 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  esp32-build:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install arduino-cli
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "::add-path::$PWD/bin"
+
+      - name: Copy arduino-cli config
+        run: |
+          mkdir -p ~/.arduino15
+          cp ./esp32/arduino-cli.yaml ~/.arduino15/
+
+      - name: Install core for ESP32
+        run: |
+          pip install pyserial
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+
+      - name: Install libraries
+        run: |
+          arduino-cli lib update-index
+          arduino-cli lib install "SparkFun BME280" "SparkFun CCS811 Arduino Library"
+
+      - name: Compile arduino project
+        run: arduino-cli compile --fqbn esp32:esp32:esp32 ./esp32/airpapyrus
+
+  raspberry-pi-lint:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install black
+        run: pip3 install black
+
+      - run: python3 -m black --check ./raspberry-pi/*.py
+
+  server-validate-dependencies:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Validate Zero-Installs
+        run: yarn install --immutable --immutable-cache --check-cache
+        working-directory: ./server
+
+  server-lint:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - run: yarn run lint
+        working-directory: ./server
+
+  server-build-and-push-docker:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to GitHub Packages
+        if: github.ref == 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "${GITHUB_TOKEN}" | docker login docker.pkg.github.com --username ciffelia --password-stdin
+
+      - name: Pull build cache
+        if: github.ref == 'refs/heads/master'
+        continue-on-error: true
+        run: docker-compose pull --quiet
+        working-directory: ./server
+
+      - name: Build docker images
+        run: docker-compose build
+        working-directory: ./server
+
+      - name: Push Docker images
+        if: github.ref == 'refs/heads/master'
+        run: docker-compose push
+        working-directory: ./server

@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  api:
+    image: docker.pkg.github.com/ciffelia/airpapyrus/airpapyrus-api
+    build:
+      context: .
+      cache_from:
+        - docker.pkg.github.com/ciffelia/airpapyrus/airpapyrus-api
+    init: true
+    environment:
+      PORT: 8080
+      DB_PATH: /home/airpapyrus/data/db.sqlite3
+    expose:
+      - 8080
+    volumes:
+      - ./data:/home/airpapyrus/data
