@@ -28,7 +28,7 @@ class Database {
 
     await this.db.exec(`create table if not exists record (
       id integer primary key autoincrement,
-      created_at integer not null,
+      created_at text not null,
       temperature real not null,
       humidity real not null,
       pressure real not null,
@@ -57,10 +57,8 @@ class Database {
       throw new Error('Statement not created.')
     }
 
-    const unixTime = Math.floor(createdAt.getTime() / 1000)
-
     await this.addRecordStatement.run({
-      $created_at: unixTime,
+      $created_at: createdAt.toISOString(),
       $temperature: record.temperature,
       $humidity: record.humidity,
       $pressure: record.pressure,
