@@ -30,7 +30,7 @@ class Database {
     await this.client.index({
       index: 'airpapyrus',
       body: {
-        created_at: createdAt.getTime() / 1000,
+        created_at: Math.floor(createdAt.getTime() / 1000),
         ...record
       }
     })
