@@ -3,7 +3,7 @@ if (process.env.PORT == null) {
 }
 export const port = parseInt(process.env.PORT)
 
-if (process.env.DB_PATH == null) {
-  throw new Error('DB_PATH is not set.')
+if (process.env.ELASTICSEARCH_NODE == null) {
+  throw new Error('ELASTICSEARCH_NODE is not set.')
 }
-export const dbPath = process.env.DB_PATH
+export const elasticsearchNode = process.env.ELASTICSEARCH_NODE

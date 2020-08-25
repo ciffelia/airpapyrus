@@ -1,71 +1,67 @@
-import sqlite3 from 'sqlite3'
-import * as sqlite from 'sqlite'
+import { Client } from '@elastic/elasticsearch'
 import { Record } from './interface/Record'
 
 class Database {
-  private db?: sqlite.Database
+  private readonly client: Client
 
-  private addRecordStatement?: sqlite.Statement
-
-  constructor (
-    private readonly dbPath: string
-  ) { }
+  constructor (elasticsearchNode: string) {
+    this.client = new Client({ node: elasticsearchNode })
+  }
 
   async open (): Promise<void> {
-    this.db = await sqlite.open({
-      filename: this.dbPath,
-      driver: sqlite3.Database
+    await this.client.ping()
+
+    await this.createIndexIfNotExist()
+  }
+
+  private async createIndexIfNotExist (): Promise<void> {
+    const { body: indexExists } = await this.client.indices.exists({ index: 'airpapyrus' })
+    if (indexExists) {
+      return
+    }
+
+    await this.client.indices.create({
+      index: 'airpapyrus',
+      body: indexTemplate
     })
-
-    await this.createTableIfNotExist()
-    await this.createPreparedStatements()
-  }
-
-  private async createTableIfNotExist (): Promise<void> {
-    if (this.db == null) {
-      throw new Error('Database not opened')
-    }
-
-    await this.db.exec(`create table if not exists record (
-      id integer primary key autoincrement,
-      created_at text not null,
-      temperature real not null,
-      humidity real not null,
-      pressure real not null,
-      co2 integer not null,
-      tvoc integer not null
-    );`)
-  }
-
-  private async createPreparedStatements (): Promise<void> {
-    if (this.db == null) {
-      throw new Error('Database not opened')
-    }
-
-    this.addRecordStatement = await this.db.prepare(`insert into record (created_at, temperature, humidity, pressure, co2, tvoc) values (
-      $created_at,
-      $temperature,
-      $humidity,
-      $pressure,
-      $co2,
-      $tvoc
-    )`)
   }
 
   async addRecord (createdAt: Date, record: Record): Promise<void> {
-    if (this.addRecordStatement == null) {
-      throw new Error('Statement not created.')
-    }
-
-    await this.addRecordStatement.run({
-      $created_at: createdAt.toISOString(),
-      $temperature: record.temperature,
-      $humidity: record.humidity,
-      $pressure: record.pressure,
-      $co2: record.co2,
-      $tvoc: record.tvoc
+    await this.client.index({
+      index: 'airpapyrus',
+      body: {
+        created_at: createdAt.getTime() / 1000,
+        ...record
+      }
     })
   }
 }
+
+const indexTemplate = {
+  mappings: {
+    dynamic: 'strict',
+    properties: {
+      created_at: {
+        type: 'date',
+        format: 'epoch_second'
+      },
+      temperature: {
+        type: 'float'
+      },
+      humidity: {
+        type: 'float'
+      },
+      pressure: {
+        type: 'float'
+      },
+      co2: {
+        type: 'integer'
+      },
+      tvoc: {
+        type: 'integer'
+      }
+    }
+  }
+} as const
 
 export { Database }

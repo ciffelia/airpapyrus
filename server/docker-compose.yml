@@ -10,7 +10,7 @@ services:
     init: true
     environment:
       PORT: 8080
-      DB_PATH: /home/airpapyrus/data/db.sqlite3
+      ELASTICSEARCH_NODE:
     expose:
       - 8080
     volumes:
