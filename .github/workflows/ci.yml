@@ -74,7 +74,7 @@ jobs:
         with:
           node-version: 12.x
 
-      - run: yarn run tsc --noEmit
+      - run: yarn run tsc
         working-directory: ./server
 
   server-lint:
