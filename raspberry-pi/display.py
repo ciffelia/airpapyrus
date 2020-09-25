@@ -71,10 +71,10 @@ def paste_center(image1, image2, xy):
 
 
 def draw_measurement_value(image, value):
-    temperature_text = str(round(value.temperature, 1))
-    humidity_text = str(round(value.humidity, 1))
-    pressure_text = str(round(value.pressure / 100))  # Pa to hPa
-    co2_text = str(round(value.co2))
+    temperature_text = str(round(value["temperature"], 1))
+    humidity_text = str(round(value["humidity"], 1))
+    pressure_text = str(round(value["pressure"] / 100))  # Pa to hPa
+    co2_text = str(round(value["co2"]))
 
     temperature_image = generate_label(temperature_text, "℃")
     humidity_image = generate_label(humidity_text, "%")

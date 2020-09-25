@@ -1,14 +1,11 @@
 #include <Wire.h>
-#include <BLEDevice.h>
 #include "Constants.hpp"
 #include "Logger.hpp"
 #include "BME280Sensor.hpp"
 #include "CCS811Sensor.hpp"
-#include "BLEAdvertise.hpp"
 
 BME280Sensor bme280;
 CCS811Sensor ccs811;
-BLEAdvertise bleAdvertise;
 
 void setup() {
   Serial.begin(Constants::Serial::SPEED);
@@ -31,10 +28,6 @@ void setup() {
     Println("Fatal error in ccs811.initialize().");
     esp_deep_sleep_start();
   }
-
-  // Initialize BLE module and advertise
-  bleAdvertise.initialize();
-  bleAdvertise.start();
 
   Println("Finished setup().");
 }
@@ -59,10 +52,15 @@ void loop() {
     ccs811Data.tvoc
   );
 
-  bleAdvertise.setPayload(
-    BLEAdvertisePayload(bme280Data, ccs811Data)
+  Serial.printf(
+    "[airpapyrus_report]%f,%f,%f,%u,%u\r\n",
+    bme280Data.temperature,
+    bme280Data.humidity,
+    bme280Data.pressure,
+    ccs811Data.co2,
+    ccs811Data.tvoc
   );
 
   Println("Finished loop().");
-  delay(15000);
+  delay(30 * 1000);
 }

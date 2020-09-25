@@ -2,10 +2,6 @@
 #define CONSTANTS_HPP
 
 namespace Constants {
-  namespace Bluetooth {
-    constexpr const char *SERVER_NAME = "airpapyrus";
-  }
-
   namespace Serial {
     constexpr uint32_t SPEED = 115200;
   }

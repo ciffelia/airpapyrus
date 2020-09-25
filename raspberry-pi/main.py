@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from time import sleep
-import ble
+import usbserial
 import display
 import epaper
 import storage
@@ -10,16 +10,15 @@ import storage
 
 def main():
     while True:
-        _, measurementValue = ble.scan(5.0)
+        value = usbserial.read()
 
-        image = display.generate_image(measurementValue)
+        image = display.generate_image(value)
         epaper.draw(image)
 
-        if measurementValue is not None:
-            storage.post(measurementValue._asdict())
+        if value is not None:
+            storage.post(value)
 
-        sleep_for_sec = max(0, 55 - datetime.now().second)
-        sleep(sleep_for_sec)
+        sleep(60 - datetime.now().second)
 
 
 if __name__ == "__main__":
