@@ -3,11 +3,16 @@ import re
 
 ser = serial.Serial("/dev/ttyUSB0", baudrate=115200)
 
-pattern = re.compile(r"^\[airpapyrus_report\]([\d\.]+),([\d\.]+),([\d\.]+),([\d\.]+),([\d\.]+)\r\n", re.MULTILINE)
+pattern = re.compile(
+    r"^\[airpapyrus_report\]([\d\.]+),([\d\.]+),([\d\.]+),([\d\.]+),([\d\.]+)\r\n",
+    re.MULTILINE,
+)
+
 
 def read_from_serial():
     bytesToRead = ser.in_waiting
     return ser.read(bytesToRead).decode("utf-8")
+
 
 def read():
     text = read_from_serial()
@@ -25,5 +30,5 @@ def read():
         "humidity": float(humidity),
         "pressure": float(pressure),
         "co2": int(co2),
-        "tvoc": int(tvoc)
+        "tvoc": int(tvoc),
     }
