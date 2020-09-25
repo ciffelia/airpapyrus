@@ -44,7 +44,7 @@ void loop() {
 
   const auto bme280Data = bme280.read();
   Printf(
-    "Temperature: %f ℃, Humidity: %f %%, Pressure: %f Pa",
+    "Temperature: %.1f ℃, Humidity: %.1f %%, Pressure: %.1f Pa",
     bme280Data.temperature,
     bme280Data.humidity,
     bme280Data.pressure
@@ -54,7 +54,7 @@ void loop() {
 
   const auto ccs811Data = ccs811.read();
   Printf(
-    "CO2: %u, TVOC: %u",
+    "CO₂: %u ppm, TVOC: %u ppb",
     ccs811Data.co2,
     ccs811Data.tvoc
   );
