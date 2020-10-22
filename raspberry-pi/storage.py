@@ -1,29 +1,19 @@
 import os
-import ssl
-import urllib.request
-import json
+import requests
 
 
 url = os.environ["POST_URL"]
-cert_file = os.environ["CERT_FILE"]
-key_file = os.environ["KEY_FILE"]
+access_client_id = os.environ["ACCESS_CLIENT_ID"]
+access_client_secret = os.environ["ACCESS_CLIENT_SECRET"]
 
 
 def post(data):
-    context = ssl.create_default_context()
-    context.load_cert_chain(cert_file, key_file)
-
-    opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context))
-
     headers = {
-        "Content-Type": "application/json",
+        "CF-Access-Client-Id": access_client_id,
+        "CF-Access-Client-Secret": access_client_secret,
     }
-    req = urllib.request.Request(
-        url, method="POST", headers=headers, data=json.dumps(data).encode()
-    )
 
     try:
-        with opener.open(req, timeout=5) as res:
-            pass
-    except urllib.error.URLError as err:
-        print(f"HTTP request error: {err.reason}")
+        requests.post(url, headers=headers, data=data, timeout=5.0)
+    except requests.exceptions.RequestException as err:
+        print(f"HTTP request error: {err}")
